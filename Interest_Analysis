@@ -1,0 +1,105 @@
+--Join both tables to combine interest data with metrics data. 
+DROP TABLE IF EXISTS metric_interest_details;
+
+CREATE TEMP TABLE metric_interest_details AS(
+SELECT 
+  t1.*,
+  t2.interest_name,
+  t2.interest_summary,
+  t2.created_at,
+  t2.last_modified
+FROM fresh_segments.interest_metrics AS t1 
+INNER JOIN fresh_segments.interest_map AS t2 
+  ON t1.interest_id = t2.id
+);
+
+/*1. interests that are present in all month_year dates */
+WITH month_yearPer_interest AS(
+SELECT 
+  interest_id,
+  COUNT(DISTINCT (month_year)) AS month_year_counts
+FROM fresh_segments.interest_metrics
+GROUP BY interest_id
+)
+SELECT 
+  month_year_counts,
+  COUNT(interest_id) AS interest_count
+FROM month_yearPer_interest
+GROUP BY month_year_counts
+ORDER BY month_year_counts DESC;
+
+--To get the interest names that were present in all month_years 
+--max month_year_counts can be calculated from distinct(month_year) on metric_interest_details
+WITH month_yearPer_interest AS(
+SELECT 
+  interest_name,
+  COUNT(DISTINCT (month_year)) AS month_year_counts
+FROM metric_interest_details
+GROUP BY interest_name
+)
+SELECT 
+  interest_name
+FROM month_yearPer_interest
+WHERE month_year_counts = 14;
+
+/* 2. cumulative percentage of all records starting at 14 months. 
+Which month_year_counts value crosses 90%? This is helpful in removing 'rare' data*/
+WITH month_yearPer_interest AS(
+SELECT 
+  interest_id,
+  COUNT(month_year) AS month_year_counts
+FROM fresh_segments.interest_metrics
+GROUP BY interest_id
+)
+SELECT 
+  month_year_counts,
+  COUNT(interest_id) AS interest_count,
+  ROUND(100*SUM(COUNT(interest_id)) OVER(ORDER BY month_year_counts DESC)/ SUM(COUNT(interest_id)) OVER(),2) AS cumulative_percent
+FROM month_yearPer_interest
+GROUP BY month_year_counts
+ORDER BY month_year_counts DESC;
+
+/* 3. How many data points will be removed if we decide to remove the data  whose month_year_counts < threshold 
+we calculated in previous question?*/
+WITH month_yearPer_interest AS(
+SELECT 
+  interest_id,
+  COUNT(month_year) AS month_year_counts
+FROM fresh_segments.interest_metrics
+GROUP BY interest_id
+),
+interest_counts AS(
+  SELECT 
+    month_year_counts,
+    COUNT(interest_id) AS interest_count
+  FROM month_yearPer_interest
+  GROUP BY month_year_counts
+)
+SELECT 
+  DISTINCT(SUM(month_year_counts*interest_count) OVER()) as records_removed
+FROM interest_counts
+WHERE month_year_counts < 6;
+
+--a more sophisticated method is using an antijoin or left semi join
+WITH unremoved_records AS(
+SELECT 
+  interest_id
+FROM fresh_segments.interest_metrics
+WHERE interest_id IS NOT NULL
+GROUP BY interest_id
+HAVING COUNT(DISTINCT month_year) >=6
+)
+SELECT
+  COUNT(*) AS removed_records
+FROM fresh_segments.interest_metrics
+WHERE NOT EXISTS (
+        SELECT 1
+        FROM unremoved_records
+        WHERE interest_metrics.interest_id = unremoved_records.interest_id);
+
+/* Unique interests for each month */
+SELECT
+  month_year,
+  COUNT(DISTINCT(interest_id)) AS unique_interests
+FROM fresh_segments.interest_metrics
+GROUP BY month_year;
