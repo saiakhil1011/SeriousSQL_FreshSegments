@@ -1,0 +1,46 @@
+-- Get data type information of the columns in table. 
+SELECT DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE 
+  TABLE_SCHEMA = 'fresh_segments' AND
+  TABLE_NAME = 'interest_metrics';
+
+--count records for each month.
+SELECT 
+  month_year,
+  COUNT(month_year) AS record_counts
+FROM fresh_segments.interest_metrics
+GROUP BY month_year
+ORDER BY month_year NULLS FIRST;
+
+--Dealing with Nulls : here it is best to delete those rows
+DELETE FROM fresh_segments.interest_metrics WHERE month_year IS NULL;
+
+--How many interest_id values exist in interest_metrics and not in interest_map? 
+SELECT 
+  COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
+  COUNT(DISTINCT(t2.id)) AS total_interest_map_id,
+  --counts t1.interest_id rows where t2.id is null. if we count t2.id where t2.id is null it returns 0
+  --since COUNT doesn't count null values
+  COUNT(CASE WHEN t2.id IS NULL THEN t1.interest_id ELSE NULL END) AS in_metrics_notin_map,
+  COUNT(CASE WHEN t1.interest_id IS NULL THEN t2.id ELSE NULL END) as notin_metrics_in_map
+FROM fresh_segments.interest_metrics AS t1 
+FULL OUTER JOIN fresh_segments.interest_map AS t2 
+  ON t1.interest_id = t2.id;
+
+--record counts of each id in interest_map. It is to make sure there are no multiple entries for a single id.
+WITH record_counts AS(
+SELECT 
+  id,
+  COUNT(id) AS records
+FROM fresh_segments.interest_map
+GROUP BY id
+)
+SELECT 
+  records,
+  COUNT(id) AS interest_ids
+FROM record_counts
+GROUP BY records;
+
+
+
