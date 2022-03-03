@@ -97,7 +97,7 @@ WHERE NOT EXISTS (
         FROM unremoved_records
         WHERE interest_metrics.interest_id = unremoved_records.interest_id);
 
-/* Unique interests for each month */
+/* 5. Unique interests for each month */
 SELECT
   month_year,
   COUNT(DISTINCT(interest_id)) AS unique_interests
