@@ -1,0 +1,131 @@
+/*Average composition can be calculated by dividing the composition column by the index_value column rounded to 2 decimal places.
+1. What is the top 10 interests by the average composition for each month?*/
+
+WITH avg_compositions AS(
+SELECT 
+  interest_metrics.month_year,
+  interest_map.interest_name,
+  ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+  RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+)
+SELECT *
+FROM avg_compositions
+WHERE index_rank <=10;
+
+/* 2. For all of these top 10 interests - which interest appears the most often?*/
+WITH avg_compositions AS(
+SELECT 
+  interest_metrics.month_year,
+  interest_map.interest_name,
+  ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+  RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+)
+SELECT 
+  interest_name,
+  COUNT(*) AS interest_frequency
+FROM avg_compositions
+WHERE index_rank <=10
+GROUP BY interest_name
+ORDER BY interest_frequency DESC;
+
+/*3.What is the average of the average composition for the top 10 interests for each month?*/
+WITH avg_compositions AS(
+SELECT 
+  interest_metrics.month_year,
+  interest_map.interest_name,
+  ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+  RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+)
+SELECT 
+  month_year,
+  ROUND(AVG(index_composition),2)AS avg_index_composition
+FROM avg_compositions
+WHERE index_rank <=10
+GROUP BY month_year
+ORDER BY 1;
+
+/* 4. What is the 3 month rolling average of the max average composition value 
+from September 2018 to August 2019 */
+WITH avg_compositions AS(
+SELECT 
+  interest_metrics.month_year,
+  interest_map.interest_name,
+  ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+  RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+),
+max_compositions AS(
+  SELECT 
+    month_year,
+    interest_name,
+    MAX(index_composition)OVER(PARTITION BY month_year) AS max_index_composition
+  FROM avg_compositions
+  WHERE 
+    index_rank = 1
+  ORDER BY 1
+),
+all_data AS(
+SELECT
+  month_year, 
+  interest_name,
+  max_index_composition,
+  ROUND(AVG(max_index_composition)OVER(
+      ORDER BY month_year
+      ROWS BETWEEN 3 PRECEDING AND CURRENT ROW ),2) AS mvg_avg_3month,
+  LAG(interest_name, 1)OVER(ORDER BY month_year) AS interest_1month_ago,
+  LAG(max_index_composition,1)OVER(ORDER BY month_year) AS mic_1month_ago,
+  LAG(interest_name, 2)OVER(ORDER BY month_year) AS interest_2month_ago,
+  LAG(max_index_composition, 2)OVER(ORDER BY month_year) AS mic_2month_ago
+FROM max_compositions
+)
+SELECT
+  month_year,
+  interest_name,
+  max_index_composition,
+  mvg_avg_3month,
+  interest_1month_ago || ': ' || mic_1month_ago AS "1_month_ago",
+  interest_2month_ago || ': ' || mic_2month_ago AS "2_months_ago"
+FROM all_data
+WHERE month_year BETWEEN '2018-09-01' AND '2019-08-01';
+
+--SIMPLIFYING ABOVE METHOD :
+WITH compositions AS(
+SELECT 
+  interest_metrics.month_year,
+  interest_map.interest_name,
+  ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC), 2) AS index_composition,
+  MAX(ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2))
+      OVER(PARTITION BY month_year) AS max_index_composition,
+  RANK()OVER(PARTITION BY month_year 
+    ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+),
+max_composition_data AS(
+SELECT
+  month_year,
+  interest_name,
+  max_index_composition,
+  ROUND(AVG(max_index_composition)OVER(
+      ORDER BY month_year
+      RANGE BETWEEN '2 MONTHS' PRECEDING AND '0 MONTH' PRECEDING ),2) AS mvg_avg_3month,
+  LAG(interest_name || ': ' || max_index_composition, 1)OVER(ORDER BY month_year) AS "1month_ago",
+  LAG(interest_name || ': ' || max_index_composition, 2)OVER(ORDER BY month_year) AS "2months_ago"
+FROM compositions
+WHERE index_rank = 1
+)
+SELECT *
+FROM max_composition_data
+WHERE "2months_ago" IS NOT NULL
