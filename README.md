@@ -210,7 +210,8 @@ In this section, I looked at how many interests were present for each month and 
 
 
 ## Segment Analysis
-1. Top 10 and bottom 10 maximum composition values
+1. Top 10 and bottom 10 maximum composition values.
+
     Among the maximum composition values for each month identify the top 10 and bottom 10 interests and their respective `month_year`
     ```sql
     WITH max_compositions AS(
@@ -314,6 +315,7 @@ In this section, I looked at how many interests were present for each month and 
     INNER JOIN max_stddev_interests AS t2 
         ON t1.interest_id = t2.interest_id
     ORDER BY 7, 4 DESC ;
+    ```
 
     <p align="center">
         <img src ="./images/segmentanalysis4.png">
