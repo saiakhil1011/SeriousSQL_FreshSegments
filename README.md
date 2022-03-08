@@ -7,7 +7,7 @@
 
 ---
 
-#Introduction
+# Introduction
 Fresh Segments is a digitial marketing agency that helps other businesses to analyze trends in online ad click behavior. The dataset used in this case study consists of aggregated metrics for each interest for each month. This dataset consists of data from only a single client of Fresh Segments.
 
 # Table of Contents
@@ -25,11 +25,9 @@ Fresh Segments is a digitial marketing agency that helps other businesses to ana
 # Exploration
 The dataset consists of two tables: Interest Metrics and Interest Map. The ERD for the dataset is below: 
 
-<iframe width="560" height="315" 
-src='https://dbdiagram.io/embed/6226656061d06e6eadbb3b69'> </iframe>
+<iframe width="560" height="315" src='https://dbdiagram.io/embed/6226656061d06e6eadbb3b69'> </iframe>
 
 **Metric Description:**
-
 Composition: The composition value is the percentage of client's customers that interacted with specific interest.
 
 Index_value: The index value describes composition value for an interest compared to all Fresh Segments clients' customer. So this means an index of 2 for a specific interest means that the composition value of the interest is 2 times the average composition value for all Fresh Segments clients' customer. 
