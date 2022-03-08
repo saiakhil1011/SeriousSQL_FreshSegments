@@ -25,12 +25,15 @@ Fresh Segments is a digitial marketing agency that helps other businesses to ana
 # Exploration
 The dataset consists of two tables: Interest Metrics and Interest Map. The ERD for the dataset is below: 
 
+<figure>
 <iframe width="560" height="315" src='https://dbdiagram.io/embed/6226656061d06e6eadbb3b69'> </iframe>
+</figure>
 
 **Metric Description:**
-Composition: The composition value is the percentage of client's customers that interacted with specific interest.
 
-Index_value: The index value describes composition value for an interest compared to all Fresh Segments clients' customer. So this means an index of 2 for a specific interest means that the composition value of the interest is 2 times the average composition value for all Fresh Segments clients' customer. 
+**Composition:** The composition value is the percentage of client's customers that interacted with specific interest.
+
+**Index_value:** The index value describes composition value for an interest compared to all Fresh Segments clients' customer. So this means an index of 2 for a specific interest means that the composition value of the interest is 2 times the average composition value for all Fresh Segments clients' customer. 
 
 ## Dealing with NULLs
 NULL entries in the `interest_metrics` table were found. It was observed that the NULL rows contained data for composition and index_value but no information was present for `_month`, `_year` and `month_year` columns. Since this information cannot be inferred, I decided to delete NULL rows from the table and use the resulting table for further analysis.
@@ -48,7 +51,7 @@ DELETE FROM fresh_segments.interest_metrics WHERE month_year IS NULL;
 Similarly, the `interest_map` table was also checked for NULLs and none were found. 
 
 ## Checking for Missing Data
-Next I wanted to see if there is any missing/unexplained data in the dataset. For this I 
+Next I wanted to see if there is any missing/unexplained data in the dataset. For this I did the following:
 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
     This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
   
