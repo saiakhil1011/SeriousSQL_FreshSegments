@@ -143,9 +143,9 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
 # Analysis
 The analysis of the dataset is divided into 3 segments. 
-1. [Interest Analysis](##Interest-Analysis)
-2. [Segment Analysis](##Segment-Analysis)
-3. [Index Analysis](##Index-Analysis)
+ [Interest Analysis](##Interest-Analysis)
+ [Segment Analysis](##Segment-Analysis)
+ [Index Analysis](##Index-Analysis)
 
 ## Interest Analysis <a name = "Interest-Analysis"></a>
 In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(interests that show up in fewer months). 
