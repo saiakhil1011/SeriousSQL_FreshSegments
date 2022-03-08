@@ -143,6 +143,7 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
 # Analysis
 The analysis of the dataset is divided into 3 segments. 
+
  [Interest Analysis](##Interest-Analysis)
  [Segment Analysis](##Segment-Analysis)
  [Index Analysis](##Index-Analysis)
