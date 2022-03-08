@@ -12,12 +12,12 @@ Fresh Segments is a digitial marketing agency that helps other businesses to ana
 
 # Table of Contents
 
-- [Problem Statement](#Problem-Statement)
-- [Exploration](#Exploration)
-- [Analysis](#Analysis)
-- [Recommendations](#Recommendations)
+- [📃 Problem Statement](#Problem-Statement)
+- [🚢 Exploration](#Exploration)
+- [💻 Analysis](#Analysis)
+- [💡 Recommendations](#Recommendations)
 
-# Problem Statement <a name = "Problem-Statement"></a>
+# 📃 Problem Statement <a name = "Problem-Statement"></a>
 
 We have been by the Fresh Segments, a digital marketing agency to analyze aggregated interest metrics of a clients' customers' ad click behaviour. 
 
@@ -26,7 +26,7 @@ We are expected to provide insights about segmentation. Details on interests tha
 Finally, we have been asked to look at overall performance through average composition index and make any recommendations necessary to improve the business for Fresh Segments. 
 
 
-# Exploration
+# 🚢 Exploration
 The dataset consists of two tables: Interest Metrics and Interest Map. The ERD for the dataset is below: 
 
 
@@ -151,7 +151,7 @@ GROUP BY records;
 All interest ids were found to be unique. 
 
 
-# Analysis
+# 💻 Analysis
 The analysis of the dataset is divided into 3 segments. 
 
  1. [Interest Analysis](#Interest-Analysis)
@@ -528,7 +528,7 @@ WHERE "2months_ago" IS NOT NULL
 </p>
 </details>
 
-# Recommendations
+# 💡 Recommendations
 
 * After looking at the composition values of interets and analyzing the standard deviation and average rankings of interests, the following recommendations are made: 
 1. Our customers in this segment purchase high-end luxury products and shoes. More ads on luxury products, hotels and vacations including shoes should be shown. 
