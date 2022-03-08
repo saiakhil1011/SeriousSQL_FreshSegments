@@ -120,12 +120,95 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     | records | interest_id_count |
     |---------|-------------------|
     |     1   |       1209        |
+
     All interest ids were found to be unique. 
 
 
 # Analysis
+The analysis of the dataset is divided into 3 segments. 
+1. Interest Analysis
+2. Segment Analysis
+3. Index Analysis
 
+## Interest Analysis
+In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(intersts that show up in fewer months). 
+1. Number of intersts present in each month
+    ```sql
+    SELECT
+        month_year,
+        COUNT(*) AS interest_count
+    FROM fresh_segments.interest_metrics
+    GROUP BY month_year
+    ORDER BY month_year;
+    ```
+    <p align="center">
+        <img src ="./images/InterestAnalysis1.png">
+    </p>
+2. Total number of months an interst id is present in
+    ```sql
+    WITH month_yearPer_interest AS(
+    SELECT 
+        interest_id,
+        COUNT(DISTINCT (month_year)) AS month_year_counts
+    FROM fresh_segments.interest_metrics
+    GROUP BY interest_id
+    )
+    SELECT 
+        month_year_counts,
+        COUNT(interest_id) AS interest_count
+    FROM month_yearPer_interest
+    GROUP BY month_year_counts
+    ORDER BY month_year_counts DESC;
+    ```
+    <p align="center">
+        <img src ="./images/InterestAnalysis2.png">
+    </p>
+3. Cumulative percentage of all records
+    ```sql
+    WITH month_yearPer_interest AS(
+    SELECT 
+        interest_id,
+        COUNT(month_year) AS month_year_counts
+    FROM fresh_segments.interest_metrics
+    GROUP BY interest_id
+    )
+    SELECT 
+        month_year_counts,
+        COUNT(interest_id) AS interest_count,
+        ROUND(100*SUM(COUNT(interest_id)) OVER(ORDER BY month_year_counts DESC)/ SUM(COUNT(interest_id)) OVER(),    2) AS cumulative_percent
+    FROM month_yearPer_interest
+    GROUP BY month_year_counts
+    ORDER BY month_year_counts DESC;
+    ```
+    <p align="center">
+        <img src ="./images/InterestAnalysis3.png">
+    </p>
+    
+    3.1. Number of records whose `month_year_counts` < threshold 
+    WITH unremoved_records AS(
+    ```sql
+    WITH unremoved_records AS(
+    SELECT 
+        interest_id
+    FROM fresh_segments.interest_metrics
+    WHERE interest_id IS NOT NULL
+    GROUP BY interest_id
+    HAVING COUNT(DISTINCT month_year) >=6
+    )
+    SELECT
+        COUNT(*) AS removed_records
+    FROM fresh_segments.interest_metrics
+    WHERE NOT EXISTS (
+            SELECT 1
+            FROM unremoved_records
+            WHERE interest_metrics.interest_id = unremoved_records.interest_id);
 
+    ```
+    | records_removed |
+    |-----------------|
+    |     400         |
+
+    
 
 # Report
 
