@@ -59,11 +59,12 @@ Similarly, the `interest_map` table was also checked for NULLs and none were fou
 
 ## Checking for Missing Data
 Next I wanted to see if there is any missing/unexplained data in the dataset. For this I did the following:
-    ### 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
     
-    This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
+### 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
+    
+This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
 
-    No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
+No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
 
     ```sql
     SELECT 
