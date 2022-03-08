@@ -12,10 +12,10 @@ Fresh Segments is a digitial marketing agency that helps other businesses to ana
 
 # Table of Contents
 
--[Problem Statement](#Problem-Statement)
--[Exploration](#Exploration)
--[Analysis](#Analysis)
--[Report](#Report)
+- [Problem Statement](#Problem-Statement)
+- [Exploration](#Exploration)
+- [Analysis](#Analysis)
+- [Report](#Report)
 
 # Problem Statement <a name = "Problem-Statement"></a>
 
@@ -54,18 +54,18 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
     This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
   
-  ```sql
-  SELECT 
-    COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
-    COUNT(DISTINCT(t2.id)) AS total_interest_map_id,
-    COUNT(CASE WHEN t2.id IS NULL THEN t1.interest_id ELSE NULL END) AS in_metrics_notin_map,
-    COUNT(CASE WHEN t1.interest_id IS NULL THEN t2.id ELSE NULL END) as notin_metrics_in_map
-  FROM fresh_segments.interest_metrics AS t1 
-  FULL OUTER JOIN fresh_segments.interest_map AS t2 
-    ON t1.interest_id = t2.id;
-  ```
+    ```sql
+    SELECT 
+        COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
+        COUNT(DISTINCT(t2.id)) AS total_interest_map_id,
+        COUNT(CASE WHEN t2.id IS NULL THEN t1.interest_id ELSE NULL END) AS in_metrics_notin_map,
+        COUNT(CASE WHEN t1.interest_id IS NULL THEN t2.id ELSE NULL END) as notin_metrics_in_map
+    FROM fresh_segments.interest_metrics AS t1 
+    FULL OUTER JOIN fresh_segments.interest_map AS t2 
+        ON t1.interest_id = t2.id;
+    ```
 
-  No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
+    No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
 
 2. Check if there are any records of interests where the corresponding `month_year` is before the `created_at` date.
     ```sql
@@ -112,8 +112,8 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     All interest ids were found to be unique. 
 
 4. Check if we are dealing with an SCD(Slowly Changing Dimension).
-    >Usually when we see any columns in a dataset which have the words >created or modified - we should be hearing alarm bells ringing and >we should consider whether we have a SCD table on our hands or a >slowly changing dimension.
-    > --<cite>[Danny Ma]</cite>
+    >Usually when we see any columns in a dataset which have the words created or modified - we should be hearing alarm bells ringing and we should consider whether we have a SCD table on our hands or a slowly changing dimension.
+    > --<cite>Danny Ma</cite>
 
 
 
@@ -126,8 +126,5 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
 
 
-=======
-# Case Study #8 Fresh Segments
 
-A SQL case study from seriousSQL course and one of #8weekssqlchallenge. 
->>>>>>> e3a8f29dc8d15212d56ae55b304248972b427ace
+
