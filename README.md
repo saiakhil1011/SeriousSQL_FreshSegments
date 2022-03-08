@@ -59,7 +59,7 @@ Similarly, the `interest_map` table was also checked for NULLs and none were fou
 
 ## Checking for Missing Data
 Next I wanted to see if there is any missing/unexplained data in the dataset. For this I did the following:
-1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
+### 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
     
     This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
 
@@ -83,7 +83,7 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     </details>
     
 
-2. Check if there are any records of interests where the corresponding `month_year` is before the `created_at` date.
+### 2. Check if there are any records of interests where the corresponding `month_year` is before the `created_at` date.
     ```sql
     WITH cte_join AS (
     SELECT
@@ -118,7 +118,7 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
     Another reason for this anomaly to make sense is that we are using first day of the month as a proxy for our aggregared monthly metrics. The new interest might be created sometime in the middle of a month. 
     </details>
-3. Check the uniqueness of primary keys in `interest_map` table. 
+### 3. Check the uniqueness of primary keys in `interest_map` table. 
     To check if there are multiple entries with the same interest_id. 
     ```sql
     WITH record_counts AS(
@@ -153,7 +153,7 @@ The analysis of the dataset is divided into 3 segments.
 
 ## Interest Analysis <a name = "Interest-Analysis"></a>
 In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(interests that show up in fewer months). 
-1. Number of intersts present in each month
+### 1. Number of intersts present in each month
     ```sql
     SELECT
         month_year,
@@ -169,7 +169,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-2. Total number of months an interst id is present in
+### 2. Total number of months an interst id is present in 
     ```sql
     WITH month_yearPer_interest AS(
     SELECT 
@@ -192,7 +192,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-3. Cumulative percentage of all records
+### 3. Cumulative percentage of all records
     ```sql
     WITH month_yearPer_interest AS(
     SELECT 
@@ -216,8 +216,8 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
     
-    3.1. Number of records whose `month_year_counts` < threshold 
-    
+### 4. Number of records whose `month_year_counts` is less than threshold
+ 
     ```sql
     WITH unremoved_records AS(
     SELECT 
@@ -244,9 +244,11 @@ In this section, I looked at how many interests were present for each month and 
     </details>
 
 ## Segment Analysis <a name = "Segment-Analysis"></a>
-1. Top 10 and bottom 10 maximum composition values.
+### 1. Top 10 and bottom 10 maximum composition values.
 
     Among the maximum composition values for each month identify the top 10 and bottom 10 interests and their respective `month_year`
+
+
     ```sql
     WITH max_compositions AS(
     SELECT
@@ -280,7 +282,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-2. Interests with lowest average ranking value
+### 2. Interests with lowest average ranking value
     ```sql
     SELECT
         interest_map.interest_name,
@@ -300,7 +302,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-    2.1. Interests with highest average ranking value
+### 2.1. Interests with highest average ranking value
     ```sql
     SELECT
         interest_map.interest_name,
@@ -321,7 +323,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-3. Interests with largest standard deviation in `percentile_ranking` value
+### 3. Interests with largest standard deviation in `percentile_ranking` value
     ```sql
     SELECT
         interest_metrics.interest_id,
@@ -348,7 +350,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-4. For the 5 interests above what are the max, min and composition values in their corresponding `month_year` value?  
+### 4. For the 5 interests above what are the max, min and composition values in their corresponding `month_year` value?  
     ```sql
     WITH max_stddev_interests AS(
     SELECT
@@ -390,7 +392,7 @@ In this section, I looked at how many interests were present for each month and 
     </details>
 
 ## Index Analysis <a name = "Index-Analysis"></a>
-1. Top 10 interests by average composition for each month? 
+### 1. Top 10 interests by average composition for each month? 
     ```sql
     WITH avg_compositions AS(
     SELECT 
@@ -413,7 +415,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-2. For all of these top 10 interests - which interest appears the most often?
+### 2. For all of these top 10 interests - which interest appears the most often?
     ```sql
     WITH avg_compositions AS(
     SELECT 
@@ -440,7 +442,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-3. What is the average of the average composition for the top 10 interests for each month?
+### 3. What is the average of the average composition for the top 10 interests for each month?
     ```sql
     WITH avg_compositions AS(
     SELECT 
@@ -467,7 +469,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-4. What is the 3 month rolling average of the max average composition value from September 2018 to August 2019?
+### 4. What is the 3 month rolling average of the max average composition value from September 2018 to August 2019?
     ```sql
     WITH compositions AS(
     SELECT 
