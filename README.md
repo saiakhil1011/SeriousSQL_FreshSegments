@@ -320,6 +320,112 @@ In this section, I looked at how many interests were present for each month and 
     <p align="center">
         <img src ="./images/segmentanalysis4.png">
     </p>
+
+## Index Analysis
+1. Top 10 interests by average composition for each month? 
+    ```sql
+    WITH avg_compositions AS(
+    SELECT 
+        interest_metrics.month_year,
+        interest_map.interest_name,
+        ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+        RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    )
+    SELECT *
+    FROM avg_compositions
+    WHERE index_rank <=10;
+    ```
+    <p align="center">
+        <img src ="./images/indexanalysis1.png">
+    </p>
+    
+2. For all of these top 10 interests - which interest appears the most often?
+    ```sql
+    WITH avg_compositions AS(
+    SELECT 
+        interest_metrics.month_year,
+        interest_map.interest_name,
+        ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+        RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    )
+    SELECT 
+        interest_name,
+        COUNT(*) AS interest_frequency
+    FROM avg_compositions
+    WHERE index_rank <=10
+    GROUP BY interest_name
+    ORDER BY interest_frequency DESC;
+    ```
+    <p align="center">
+        <img src ="./images/indexanalysis2.png">
+    </p>
+
+3. What is the average of the average composition for the top 10 interests for each month?
+    ```sql
+    WITH avg_compositions AS(
+    SELECT 
+        interest_metrics.month_year,
+        interest_map.interest_name,
+        ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2) AS index_composition,
+        RANK()OVER(PARTITION BY month_year ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    )
+    SELECT 
+        month_year,
+        ROUND(AVG(index_composition),2)AS avg_index_composition
+    FROM avg_compositions
+    WHERE index_rank <=10
+    GROUP BY month_year
+    ORDER BY 1;
+    ```
+    <p align="center">
+        <img src ="./images/indexanalysis3.png">
+    </p>
+
+4. What is the 3 month rolling average of the max average composition value from September 2018 to August 2019?
+    ```sql
+    WITH compositions AS(
+    SELECT 
+        interest_metrics.month_year,
+        interest_map.interest_name,
+        ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC), 2) AS index_composition,
+        MAX(ROUND(CAST (interest_metrics.composition / interest_metrics.index_value AS NUMERIC) , 2))
+            OVER(PARTITION BY month_year) AS max_index_composition,
+        RANK()OVER(PARTITION BY month_year 
+            ORDER BY interest_metrics.composition / interest_metrics.index_value DESC) AS index_rank
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    ),
+    max_composition_data AS(
+    SELECT
+        month_year,
+        interest_name,
+        max_index_composition,
+        ROUND(AVG(max_index_composition)OVER(
+            ORDER BY month_year
+            RANGE BETWEEN '2 MONTHS' PRECEDING AND '0 MONTH' PRECEDING ),2) AS mvg_avg_3month,
+        LAG(interest_name || ': ' || max_index_composition, 1)OVER(ORDER BY month_year) AS "1month_ago",
+        LAG(interest_name || ': ' || max_index_composition, 2)OVER(ORDER BY month_year) AS "2months_ago"
+    FROM compositions
+    WHERE index_rank = 1
+    )
+    SELECT *
+    FROM max_composition_data
+    WHERE "2months_ago" IS NOT NULL
+    ```
+    <p align="center">
+        <img src ="./images/indexanalysis4.png">
+    </p>
+
 # Report
 
 
