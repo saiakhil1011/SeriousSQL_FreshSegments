@@ -66,22 +66,22 @@ This is to make sure that we don't have any records that have `interest_id`s tha
 
 No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
 
-    ```sql
-    SELECT 
-        COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
-        COUNT(DISTINCT(t2.id)) AS total_interest_map_id,
-        COUNT(CASE WHEN t2.id IS NULL THEN t1.interest_id ELSE NULL END) AS in_metrics_notin_map,
-        COUNT(CASE WHEN t1.interest_id IS NULL THEN t2.id ELSE NULL END) as notin_metrics_in_map
-    FROM fresh_segments.interest_metrics AS t1 
-    FULL OUTER JOIN fresh_segments.interest_map AS t2 
-        ON t1.interest_id = t2.id;
-    ```
-    <details>
-        <summary>Output</summary>
-    | total_interest_metrics_id | total_interest_map_id | only_in_metrics | only_in_map|
-    | ------------------------- | --------------------- | --------------- | -----------|
-    |            1202           |           1209        |         0       |      7     |
-    </details>
+```sql
+SELECT 
+    COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
+    COUNT(DISTINCT(t2.id)) AS total_interest_map_id,
+    COUNT(CASE WHEN t2.id IS NULL THEN t1.interest_id ELSE NULL END) AS in_metrics_notin_map,
+    COUNT(CASE WHEN t1.interest_id IS NULL THEN t2.id ELSE NULL END) as notin_metrics_in_map
+FROM fresh_segments.interest_metrics AS t1 
+FULL OUTER JOIN fresh_segments.interest_map AS t2 
+    ON t1.interest_id = t2.id;
+```
+<details>
+    <summary>Output</summary>
+| total_interest_metrics_id | total_interest_map_id | only_in_metrics | only_in_map|
+| ------------------------- | --------------------- | --------------- | -----------|
+|            1202           |           1209        |         0       |      7     |
+</details>
     
 
 ### 2. Check if there are any records of interests where the corresponding `month_year` is before the `created_at` date.
