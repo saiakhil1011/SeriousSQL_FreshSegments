@@ -57,8 +57,11 @@ Similarly, the `interest_map` table was also checked for NULLs and none were fou
 ## Checking for Missing Data
 Next I wanted to see if there is any missing/unexplained data in the dataset. For this I did the following:
 1. Check if all the `interest_id` in the `interest_metrics` table are present in the `interest_map` table. 
+    
     This is to make sure that we don't have any records that have `interest_id`s that are not present in the `interest_map` table. (No foreign keys that do not match with primary keys are present) 
-  
+
+    No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
+    
     ```sql
     SELECT 
         COUNT(DISTINCT(t1.interest_id)) AS total_interest_metrics_id,
@@ -69,11 +72,13 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FULL OUTER JOIN fresh_segments.interest_map AS t2 
         ON t1.interest_id = t2.id;
     ```
+    <details>
+        <summary>Output</summary>
     | total_interest_metrics_id | total_interest_map_id | only_in_metrics | only_in_map|
     | ------------------------- | --------------------- | --------------- | -----------|
     |            1202           |           1209        |         0       |      7     |
-
-    No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
+    </details>
+    
 
 2. Check if there are any records of interests where the corresponding `month_year` is before the `created_at` date.
     ```sql
@@ -94,17 +99,22 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FROM cte_join
     WHERE month_year < created_at;
     ```
+    <details>
+        <summary>Output</summary>
     | count |
     |-------|
     |   188 |
+    </details>
 
     There are 188 records where `month_date` of a record is before the `created_at` date.
+     <details>
+        <summary>Why this makes sense in this case?</summary>
      In this particular case, this data makes sense as new interests could be created by breaking down and modifying older and broader categories to put more focus on certain interest categories. This is also useful when you want to take a deep dive at the data and understand which specific ads(interests) are performing well in terms of capturing customer attention. 
 
     For example, let's say we have two interst categories: Sports and automobile enthusiasts. The metrics for these don't really give us a lot of information and insight into performance of difference ads. If we want to know if bike ads have performing better than car ads, it is not possible with the current data. But if we break them down into narrow categories such as bike enthusiasts, car enthusiasts, NFL fans, NBA fans, the data is much more specific and gives us a lot more insights into how well the specific ad campaigns are working. 
 
     Another reason for this anomaly to make sense is that we are using first day of the month as a proxy for our aggregared monthly metrics. The new interest might be created sometime in the middle of a month. 
-
+    </details>
 3. Check the uniqueness of primary keys in `interest_map` table. 
     To check if there are multiple entries with the same interest_id. 
     ```sql
@@ -121,9 +131,12 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FROM record_counts
     GROUP BY records;
     ```
+    <details>
+        <summary>Output</summary>
     | records | interest_id_count |
     |---------|-------------------|
     |     1   |       1209        |
+    </details>
 
     All interest ids were found to be unique. 
 
@@ -145,9 +158,13 @@ In this section, I looked at how many interests were present for each month and 
     GROUP BY month_year
     ORDER BY month_year;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/InterestAnalysis1.png">
     </p>
+    </details>
+
 2. Total number of months an interst id is present in
     ```sql
     WITH month_yearPer_interest AS(
@@ -164,9 +181,13 @@ In this section, I looked at how many interests were present for each month and 
     GROUP BY month_year_counts
     ORDER BY month_year_counts DESC;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/InterestAnalysis2.png">
     </p>
+    </details>
+
 3. Cumulative percentage of all records
     ```sql
     WITH month_yearPer_interest AS(
@@ -184,9 +205,12 @@ In this section, I looked at how many interests were present for each month and 
     GROUP BY month_year_counts
     ORDER BY month_year_counts DESC;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/InterestAnalysis3.png">
     </p>
+    </details>
     
     3.1. Number of records whose `month_year_counts` < threshold 
     
@@ -208,10 +232,12 @@ In this section, I looked at how many interests were present for each month and 
             WHERE interest_metrics.interest_id = unremoved_records.interest_id);
 
     ```
+    <details>
+        <summary>Output</summary>
     | records_removed |
     |-----------------|
     |     400         |
-
+    </details>
 
 ## Segment Analysis
 1. Top 10 and bottom 10 maximum composition values.
@@ -243,9 +269,13 @@ In this section, I looked at how many interests were present for each month and 
     (SELECT * FROM final_compositions ORDER BY max_composition LIMIT 10)
     ORDER BY max_composition DESC;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/segmentanalysis1.png">
     </p>
+    </details>
+
 2. Interests with lowest average ranking value
     ```sql
     SELECT
@@ -259,9 +289,12 @@ In this section, I looked at how many interests were present for each month and 
     ORDER BY average_ranking
     LIMIT 5;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/segmentanalysis2.png">
     </p>
+    </details>
 
     2.1. Interests with highest average ranking value
     ```sql
@@ -276,9 +309,13 @@ In this section, I looked at how many interests were present for each month and 
     ORDER BY average_ranking
     LIMIT 5;
     ```
+
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/segmentanalysis2.1.png">
     </p>
+    </details>
 
 3. Interests with largest standard deviation in `percentile_ranking` value
     ```sql
@@ -300,9 +337,13 @@ In this section, I looked at how many interests were present for each month and 
     ORDER BY stddev_pc DESC
     LIMIT 5;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/segmentanalysis3.png">
     </p>
+    </details>
+
 4. For the 5 interests above what are the max, min and composition values in their corresponding `month_year` value?  
     ```sql
     WITH max_stddev_interests AS(
@@ -337,10 +378,12 @@ In this section, I looked at how many interests were present for each month and 
         ON t1.interest_id = t2.interest_id
     ORDER BY 7, 4 DESC ;
     ```
-
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/segmentanalysis4.png">
     </p>
+    </details>
 
 ## Index Analysis
 1. Top 10 interests by average composition for each month? 
@@ -359,9 +402,12 @@ In this section, I looked at how many interests were present for each month and 
     FROM avg_compositions
     WHERE index_rank <=10;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/indexanalysis1.png">
     </p>
+    </details>
 
 2. For all of these top 10 interests - which interest appears the most often?
     ```sql
@@ -383,9 +429,12 @@ In this section, I looked at how many interests were present for each month and 
     GROUP BY interest_name
     ORDER BY interest_frequency DESC;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/indexanalysis2.png">
     </p>
+    </details>
 
 3. What is the average of the average composition for the top 10 interests for each month?
     ```sql
@@ -407,9 +456,12 @@ In this section, I looked at how many interests were present for each month and 
     GROUP BY month_year
     ORDER BY 1;
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/indexanalysis3.png">
     </p>
+    </details>
 
 4. What is the 3 month rolling average of the max average composition value from September 2018 to August 2019?
     ```sql
@@ -443,9 +495,12 @@ In this section, I looked at how many interests were present for each month and 
     FROM max_composition_data
     WHERE "2months_ago" IS NOT NULL
     ```
+    <details>
+        <summary>Output</summary>
     <p align="center">
         <img src ="./images/indexanalysis4.png">
     </p>
+    </details>
 
 # Recommendations
 
