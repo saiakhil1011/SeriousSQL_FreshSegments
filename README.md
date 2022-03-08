@@ -131,7 +131,7 @@ The analysis of the dataset is divided into 3 segments.
 3. Index Analysis
 
 ## Interest Analysis
-In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(intersts that show up in fewer months). 
+In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(interests that show up in fewer months). 
 1. Number of intersts present in each month
     ```sql
     SELECT
@@ -185,7 +185,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     
     3.1. Number of records whose `month_year_counts` < threshold 
-    WITH unremoved_records AS(
+    
     ```sql
     WITH unremoved_records AS(
     SELECT 
@@ -208,8 +208,116 @@ In this section, I looked at how many interests were present for each month and 
     |-----------------|
     |     400         |
 
-    
 
+## Segment Analysis
+1. Top 10 and bottom 10 maximum composition values
+    Among the maximum composition values for each month identify the top 10 and bottom 10 interests and their respective `month_year`
+    ```sql
+    WITH max_compositions AS(
+    SELECT
+        interest_id,
+        interest_metrics.month_year,
+        interest_map.interest_name,
+        interest_metrics.composition,
+        MAX(composition) OVER(PARTITION BY interest_id) AS max_composition
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    ),
+    final_compositions AS(
+    SELECT 
+        max_compositions.month_year,
+        max_compositions.interest_name,
+        max_compositions.max_composition
+    FROM max_compositions
+    WHERE max_composition = composition
+    )
+    --Enclose select statements in brackets when using order by for union. 
+    (SELECT * FROM final_compositions ORDER BY max_composition DESC LIMIT 10)
+    UNION 
+    (SELECT * FROM final_compositions ORDER BY max_composition LIMIT 10)
+    ORDER BY max_composition DESC;
+    ```
+    <p align="center">
+        <img src ="./images/segmentanalysis1.png">
+    </p>
+2. Interests with lowest average ranking value
+    ```sql
+    SELECT
+        interest_map.interest_name,
+        ROUND(AVG(ranking),1) AS average_ranking,
+        COUNT(*) AS record_count
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    GROUP BY interest_map.interest_name
+    ORDER BY average_ranking
+    LIMIT 5;
+    ```
+    <p align="center">
+        <img src ="./images/segmentanalysis2.png">
+    </p>
+
+3. Interests with largest standard deviation in `percentile_ranking` value
+    ```sql
+    SELECT
+        interest_metrics.interest_id,
+        interest_map.interest_name,
+        ROUND(CAST(STDDEV(percentile_ranking)AS NUMERIC),1) AS stddev_pc,
+        MAX(percentile_ranking) AS max_pc,
+        MIN(percentile_ranking) AS min_pc,
+        COUNT(*) AS record_counts
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    WHERE month_year IS NOT NULL
+    GROUP BY 
+        interest_metrics.interest_id,
+        interest_map.interest_name
+    HAVING STDDEV(percentile_ranking) IS NOT NULL
+    ORDER BY stddev_pc DESC
+    LIMIT 5;
+    ```
+    <p align="center">
+        <img src ="./images/segmentanalysis3.png">
+    </p>
+4. For the 5 interests above what are the max, min and composition values in their corresponding `month_year` value?  
+    ```sql
+    WITH max_stddev_interests AS(
+    SELECT
+        interest_metrics.interest_id,
+        interest_map.interest_name,
+        ROUND(CAST(STDDEV(percentile_ranking)AS NUMERIC),1) AS stddev_pc,
+        MAX(percentile_ranking) AS max_pc
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    WHERE month_year IS NOT NULL
+    GROUP BY 
+        interest_metrics.interest_id,
+        interest_map.interest_name
+    HAVING STDDEV(percentile_ranking) IS NOT NULL
+    ORDER BY stddev_pc DESC
+    LIMIT 5
+    )
+    SELECT 
+        t2.interest_name,
+        t1.month_year,
+        t1.ranking,
+        t1.percentile_ranking,
+        t1.composition,
+        t2.stddev_pc,
+    --RANKING to order the output in the same sequence as we obtained in previous question. 
+    --Ordered in descending order for highest std_dev(percentile_ranking)
+        RANK()OVER(ORDER BY stddev_pc DESC) AS max_stddev_ranking
+    FROM fresh_segments.interest_metrics AS t1 
+    INNER JOIN max_stddev_interests AS t2 
+        ON t1.interest_id = t2.interest_id
+    ORDER BY 7, 4 DESC ;
+
+    <p align="center">
+        <img src ="./images/segmentanalysis4.png">
+    </p>
 # Report
 
 
