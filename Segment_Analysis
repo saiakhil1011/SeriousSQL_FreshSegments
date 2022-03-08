@@ -40,6 +40,19 @@ GROUP BY interest_map.interest_name
 ORDER BY average_ranking
 LIMIT 5;
 
+/* 2.1 Which 5 intersts had the highest average ranking value?*/
+SELECT
+  interest_map.interest_name,
+  ROUND(AVG(ranking),1) AS average_ranking,
+  COUNT(*) AS record_count
+FROM fresh_segments.interest_metrics
+INNER JOIN fresh_segments.interest_map
+  ON interest_metrics.interest_id = interest_map.id
+GROUP BY interest_map.interest_name
+ORDER BY average_ranking
+LIMIT 5;
+
+
 
 /* 3. Which 5 interests had the largest standard deviation in their percentile_ranking value?*/
 SELECT

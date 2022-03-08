@@ -15,11 +15,15 @@ Fresh Segments is a digitial marketing agency that helps other businesses to ana
 - [Problem Statement](#Problem-Statement)
 - [Exploration](#Exploration)
 - [Analysis](#Analysis)
-- [Report](#Report)
+- [Recommendations](#Recommendations)
 
 # Problem Statement <a name = "Problem-Statement"></a>
 
+We have been by the Fresh Segments, a digital marketing agency to analyze aggregated interest metrics of a clients' customers' ad click behaviour. 
 
+We are expected to provide insights about segmentation. Details on interests that should be shown and to be avoided to the customers are also requested. 
+
+Finally, we have been asked to look at overall performance through average composition index and make any recommendations necessary to improve the business for Fresh Segments. 
 
 
 # Exploration
@@ -259,6 +263,23 @@ In this section, I looked at how many interests were present for each month and 
         <img src ="./images/segmentanalysis2.png">
     </p>
 
+    2.1. Interests with highest average ranking value
+    ```sql
+    SELECT
+        interest_map.interest_name,
+        ROUND(AVG(ranking),1) AS average_ranking,
+        COUNT(*) AS record_count
+    FROM fresh_segments.interest_metrics
+    INNER JOIN fresh_segments.interest_map
+        ON interest_metrics.interest_id = interest_map.id
+    GROUP BY interest_map.interest_name
+    ORDER BY average_ranking
+    LIMIT 5;
+    ```
+    <p align="center">
+        <img src ="./images/segmentanalysis2.1.png">
+    </p>
+
 3. Interests with largest standard deviation in `percentile_ranking` value
     ```sql
     SELECT
@@ -341,7 +362,7 @@ In this section, I looked at how many interests were present for each month and 
     <p align="center">
         <img src ="./images/indexanalysis1.png">
     </p>
-    
+
 2. For all of these top 10 interests - which interest appears the most often?
     ```sql
     WITH avg_compositions AS(
@@ -426,7 +447,18 @@ In this section, I looked at how many interests were present for each month and 
         <img src ="./images/indexanalysis4.png">
     </p>
 
-# Report
+# Recommendations
+
+* After looking at the composition values of interets and analyzing the standard deviation and average rankings of interests, the following recommendations are made: 
+1. Our customers in this segment purchase high-end luxury products and shoes. More ads on luxury products, hotels and vacations including shoes should be shown. 
+2. Ads that fall into interest segments on video games and movies(SciFi and action genres) should be avoided. 
+3. Some segments such as blockbuster movie fans, android fans, TV junkies, Techies and Entertainment Industry Decision makers seem to be periodic or seasonal. So market segmentation should be made more dynamic to effectively capture customer behaviour and increase profits. 
+
+* Decreasing composition index over the months suggests that the fewer customers of our clients are watching/clicking on the targeted ads. This suggests that Fresh Segments might be using an ineffective strategy to target their customers. 
+
+* Focusing marketing strategy based off the interests of specific clients' customers would result in targeting niche segments for each client. This ignores the broader picture of varying trends in index populations thereby making our ads ineffective overtime. 
+
+
 
 
 
