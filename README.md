@@ -29,9 +29,9 @@ Finally, we have been asked to look at overall performance through average compo
 # Exploration
 The dataset consists of two tables: Interest Metrics and Interest Map. The ERD for the dataset is below: 
 
-<figure>
+```html
 <iframe width="560" height="315" src='https://dbdiagram.io/embed/6226656061d06e6eadbb3b69'> </iframe>
-</figure>
+```
 
 **Metric Description:**
 
@@ -143,11 +143,11 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
 # Analysis
 The analysis of the dataset is divided into 3 segments. 
-1. Interest Analysis
-2. Segment Analysis
-3. Index Analysis
+1. [Interest Analysis](##Interest-Analysis)
+2. [Segment Analysis](##Segment-Analysis)
+3. [Index Analysis](##Index-Analysis)
 
-## Interest Analysis
+## Interest Analysis <a name = "Interest-Analysis"></a>
 In this section, I looked at how many interests were present for each month and how many interests were present in total_months. This tells us which interests are most frequent (number of months an interest shows up ) and which ones are not performing well (not frequent, only shows up in few months). It would also explain how newly introduced interests are performing(interests that show up in fewer months). 
 1. Number of intersts present in each month
     ```sql
@@ -239,7 +239,7 @@ In this section, I looked at how many interests were present for each month and 
     |     400         |
     </details>
 
-## Segment Analysis
+## Segment Analysis <a name = "Segment-Analysis"></a>
 1. Top 10 and bottom 10 maximum composition values.
 
     Among the maximum composition values for each month identify the top 10 and bottom 10 interests and their respective `month_year`
@@ -385,7 +385,7 @@ In this section, I looked at how many interests were present for each month and 
     </p>
     </details>
 
-## Index Analysis
+## Index Analysis <a name = "Index-Analysis"></a>
 1. Top 10 interests by average composition for each month? 
     ```sql
     WITH avg_compositions AS(
