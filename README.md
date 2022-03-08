@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Case_Study#8: FreshSegments
 
 <p align="center">
@@ -125,3 +126,8 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
 
 
 
+=======
+# Case Study #8 Fresh Segments
+
+A SQL case study from seriousSQL course and one of #8weekssqlchallenge. 
+>>>>>>> e3a8f29dc8d15212d56ae55b304248972b427ace
