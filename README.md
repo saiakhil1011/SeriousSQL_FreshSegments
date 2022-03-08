@@ -65,6 +65,9 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FULL OUTER JOIN fresh_segments.interest_map AS t2 
         ON t1.interest_id = t2.id;
     ```
+    | total_interest_metrics_id | total_interest_map_id | only_in_metrics | only_in_map|
+    | ------------------------- | --------------------- | --------------- | -----------|
+    |            1202           |           1209        |         0       |      7     |
 
     No records in the `interest_metrics` table were found with a foreign key(interest_id) that doesn't exist in `interest_map` table.
 
@@ -87,6 +90,10 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FROM cte_join
     WHERE month_year < created_at;
     ```
+    | count |
+    |-------|
+    |   188 |
+
     There are 188 records where `month_date` of a record is before the `created_at` date.
      In this particular case, this data makes sense as new interests could be created by breaking down and modifying older and broader categories to put more focus on certain interest categories. This is also useful when you want to take a deep dive at the data and understand which specific ads(interests) are performing well in terms of capturing customer attention. 
 
@@ -110,13 +117,10 @@ Next I wanted to see if there is any missing/unexplained data in the dataset. Fo
     FROM record_counts
     GROUP BY records;
     ```
+    | records | interest_id_count |
+    |---------|-------------------|
+    |     1   |       1209        |
     All interest ids were found to be unique. 
-
-4. Check if we are dealing with an SCD(Slowly Changing Dimension).
-    >Usually when we see any columns in a dataset which have the words created or modified - we should be hearing alarm bells ringing and we should consider whether we have a SCD table on our hands or a slowly changing dimension.
-    > --<cite>Danny Ma</cite>
-
-
 
 
 # Analysis
