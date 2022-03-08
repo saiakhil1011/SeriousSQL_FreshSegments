@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Case_Study#8: FreshSegments
 
 <p align="center">
